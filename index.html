@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Controle Financeiro Rosa Claro</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+
+body{
+font-family:Arial,sans-serif;
+background:linear-gradient(180deg,#fff1f8,#ffd6ec,#ffb3d9);
+color:#6b1747;
+min-height:100vh;
+}
+
+.hidden{display:none!important}
+
+.login{
+min-height:100vh;
+display:flex;
+align-items:center;
+justify-content:center;
+padding:25px;
+}
+
+.container{
+max-width:560px;
+margin:auto;
+padding:22px;
+}
+
+.card,.box{
+background:rgba(255,255,255,.93);
+border-radius:30px;
+padding:22px;
+margin-top:18px;
+box-shadow:0 14px 35px rgba(255,105,180,.20);
+border:1px solid rgba(255,255,255,.9);
+}
+
+h1,h2{
+text-align:center;
+color:#d63384;
+margin-top:10px;
+}
+
+.sub{
+text-align:center;
+color:#9b315f;
+font-weight:bold;
+margin-top:8px;
+}
+
+label{
+display:block;
+margin-top:14px;
+font-weight:bold;
+color:#7a2247;
+}
+
+input,select,textarea{
+width:100%;
+padding:14px;
+margin-top:7px;
+border-radius:18px;
+border:1px solid #f3a6c8;
+background:#fff8fc;
+color:#6b1747;
+font-size:16px;
+}
+
+textarea{
+height:75px;
+resize:none;
+}
+
+button{
+border:none;
+cursor:pointer;
+font-weight:bold;
+}
+
+.btn{
+width:100%;
+padding:15px;
+margin-top:15px;
+border-radius:20px;
+background:linear-gradient(135deg,#ff77b7,#ffb3d9,#ffd6ec);
+color:white;
+font-size:16px;
+box-shadow:0 8px 22px rgba(255,105,180,.25);
+}
+
+.resumo{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:10px;
+margin-top:14px;
+}
+
+.mini{
+background:#fff8fc;
+border-radius:18px;
+padding:13px;
+text-align:center;
+border:1px solid #ffc1df;
+}
+
+.valor{
+font-size:22px;
+font-weight:bold;
+color:#d63384;
+margin-top:5px;
+}
+
+.saldo{
+font-size:36px;
+font-weight:bold;
+text-align:center;
+color:#d63384;
+margin-top:10px;
+}
+
+.graficoBox{
+display:flex;
+justify-content:center;
+margin:18px 0;
+}
+
+.donut{
+width:190px;
+height:190px;
+border-radius:50%;
+background:conic-gradient(#ff77b7 0deg,#ff77b7 360deg);
+display:flex;
+align-items:center;
+justify-content:center;
+position:relative;
+box-shadow:0 0 30px rgba(255,105,180,.28);
+border:8px solid white;
+}
+
+.donut::after{
+content:"";
+width:112px;
+height:112px;
+background:#fff8fc;
+border-radius:50%;
+position:absolute;
+}
+
+.donutTexto{
+position:absolute;
+z-index:2;
+text-align:center;
+font-weight:bold;
+color:#d63384;
+font-size:14px;
+max-width:90px;
+}
+
+.legendaItem,.rankItem,.item{
+background:#fff8fc;
+border:1px solid #ffc1df;
+border-radius:16px;
+padding:12px;
+margin-top:9px;
+line-height:1.5;
+}
+
+.legendaItem{
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:8px;
+font-size:13px;
+}
+
+.bolinha{
+width:14px;
+height:14px;
+border-radius:50%;
+display:inline-block;
+margin-right:6px;
+}
+
+.ok{color:#15803d;font-weight:bold}
+.no{color:#be123c;font-weight:bold}
+
+.del{
+background:#be123c;
+color:white;
+border-radius:10px;
+padding:8px 11px;
+margin-top:8px;
+}
+
+footer{
+text-align:center;
+font-size:12px;
+color:#9b315f;
+font-weight:bold;
+margin-top:22px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="login" id="login">
+<div class="box">
+<h1>Controle Financeiro Rosa Claro</h1>
+<p class="sub">Entradas, saídas e saldo por mês</p>
+
+<label>Senha</label>
+<input type="password" id="senha" placeholder="Digite a senha">
+
+<button class="btn" onclick="entrar()">Entrar</button>
+</div>
+</div>
+
+<div class="container hidden" id="app">
+
+<h1>Controle Financeiro Rosa Claro</h1>
+<p class="sub">Cadastre seus próprios tipos de gastos e entradas</p>
+
+<div class="card">
+<h2>Resumo do mês</h2>
+
+<label>Escolha o mês</label>
+<input type="month" id="mesFiltro" onchange="atualizar()">
+
+<div class="saldo" id="saldo">R$0,00</div>
+
+<div class="graficoBox">
+<div class="donut" id="donut">
+<div class="donutTexto" id="donutTexto">Sem<br>dados</div>
+</div>
+</div>
+
+<div id="legenda"></div>
+
+<div class="resumo">
+<div class="mini"><div>Entradas</div><div class="valor" id="entradas">R$0,00</div></div>
+<div class="mini"><div>Saídas</div><div class="valor" id="saidas">R$0,00</div></div>
+<div class="mini"><div>Registros</div><div class="valor" id="registros">0</div></div>
+<div class="mini"><div>Maior saída</div><div class="valor" id="maiorSaida">R$0,00</div></div>
+</div>
+</div>
+
+<div class="card">
+<h2>Nova movimentação</h2>
+
+<label>Tipo</label>
+<select id="tipo">
+<option value="saida">Saída / Gasto</option>
+<option value="entrada">Entrada / Recebido</option>
+</select>
+
+<label>Categoria / nome do que foi</label>
+<input type="text" id="categoria" placeholder="Ex: mercado, aluguel, pix cliente...">
+
+<label>Onde gastou ou recebeu?</label>
+<input type="text" id="local" placeholder="Ex: mercado, loja, Pix, cartão...">
+
+<label>Quanto foi?</label>
+<input type="text" id="valor" placeholder="Ex: 45,50">
+
+<label>Data</label>
+<input type="date" id="data">
+
+<label>Observação</label>
+<textarea id="obs" placeholder="Ex: compra do mês, cliente tal, parcela..."></textarea>
+
+<button class="btn" onclick="salvarMov()">Salvar movimentação</button>
+</div>
+
+<div class="card">
+<h2>Ranking de saídas do mês</h2>
+<div id="ranking"></div>
+</div>
+
+<div class="card">
+<h2>Histórico do mês</h2>
+<div id="lista"></div>
+</div>
+
+<footer>Controle Financeiro Rosa Claro 💖</footer>
+</div>
+
+<script>
+let movimentos = JSON.parse(localStorage.getItem("controleFinanceiroRosaClaro020126")) || [];
+
+const cores=[
+"#ff77b7","#ffb3d9","#ffd6ec","#dbb6ee","#f9a8d4",
+"#f0abfc","#e879f9","#f472b6","#c084fc","#fb7185"
+];
+
+function entrar(){
+if(document.getElementById("senha").value==="020126"){
+document.getElementById("login").style.display="none";
+document.getElementById("app").classList.remove("hidden");
+if(!mesFiltro.value) mesFiltro.value=new Date().toISOString().slice(0,7);
+atualizar();
+}else{
+alert("Senha incorreta.");
+}
+}
+
+function dinheiro(v){
+return Number(v).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+}
+
+function numeroBR(v){
+return Number(String(v).replace(",", ".")) || 0;
+}
+
+function salvar(){
+localStorage.setItem("controleFinanceiroRosaClaro020126",JSON.stringify(movimentos));
+}
+
+function salvarMov(){
+let tipo=document.getElementById("tipo").value;
+let categoria=document.getElementById("categoria").value.trim();
+let local=document.getElementById("local").value.trim();
+let valor=numeroBR(document.getElementById("valor").value);
+let data=document.getElementById("data").value;
+let obs=document.getElementById("obs").value.trim();
+
+if(!categoria || !valor || !data){
+alert("Preencha categoria/nome, valor e data.");
+return;
+}
+
+movimentos.push({tipo,categoria,local,valor,data,obs});
+salvar();
+
+document.getElementById("categoria").value="";
+document.getElementById("local").value="";
+document.getElementById("valor").value="";
+document.getElementById("data").value="";
+document.getElementById("obs").value="";
+
+atualizar();
+}
+
+function excluir(index){
+if(confirm("Excluir esse registro?")){
+movimentos.splice(index,1);
+salvar();
+atualizar();
+}
+}
+
+function movimentosMes(){
+let mes=document.getElementById("mesFiltro").value || new Date().toISOString().slice(0,7);
+return movimentos.map((m,i)=>({...m,index:i})).filter(m=>m.data && m.data.startsWith(mes));
+}
+
+function agruparSaidas(lista){
+let mapa={};
+
+lista.filter(m=>m.tipo==="saida").forEach(m=>{
+mapa[m.categoria]=(mapa[m.categoria]||0)+m.valor;
+});
+
+return Object.keys(mapa).map(c=>({categoria:c,valor:mapa[c]})).sort((a,b)=>b.valor-a.valor);
+}
+
+function atualizar(){
+let lista=movimentosMes();
+
+let entradas=lista.filter(m=>m.tipo==="entrada").reduce((s,m)=>s+m.valor,0);
+let saidas=lista.filter(m=>m.tipo==="saida").reduce((s,m)=>s+m.valor,0);
+let saldo=entradas-saidas;
+let maior=lista.filter(m=>m.tipo==="saida").reduce((max,m)=>m.valor>max?m.valor:max,0);
+
+document.getElementById("saldo").innerText=dinheiro(saldo);
+document.getElementById("entradas").innerText=dinheiro(entradas);
+document.getElementById("saidas").innerText=dinheiro(saidas);
+document.getElementById("registros").innerText=lista.length;
+document.getElementById("maiorSaida").innerText=dinheiro(maior);
+
+atualizarGrafico(lista);
+atualizarRanking(lista);
+atualizarLista(lista);
+}
+
+function atualizarGrafico(lista){
+let grupos=agruparSaidas(lista);
+let total=grupos.reduce((s,g)=>s+g.valor,0);
+let donut=document.getElementById("donut");
+let texto=document.getElementById("donutTexto");
+let legenda=document.getElementById("legenda");
+
+if(total===0){
+donut.style.background="conic-gradient(#ff77b7 0deg,#ff77b7 360deg)";
+texto.innerHTML="Sem<br>saídas";
+legenda.innerHTML="<p class='sub'>Cadastre saídas para ver onde mais gastou.</p>";
+return;
+}
+
+let atual=0;
+let partes=[];
+
+grupos.forEach((g,i)=>{
+let graus=(g.valor/total)*360;
+let cor=cores[i%cores.length];
+partes.push(`${cor} ${atual}deg ${atual+graus}deg`);
+atual+=graus;
+});
+
+donut.style.background=`conic-gradient(${partes.join(",")})`;
+
+let maior=grupos[0];
+let perc=Math.round((maior.valor/total)*100);
+texto.innerHTML=`${perc}%<br>${maior.categoria}`;
+
+legenda.innerHTML="";
+grupos.slice(0,8).forEach((g,i)=>{
+let percItem=Math.round((g.valor/total)*100);
+legenda.innerHTML+=`
+<div class="legendaItem">
+<div><span class="bolinha" style="background:${cores[i%cores.length]}"></span><strong>${g.categoria}</strong></div>
+<div>${dinheiro(g.valor)} (${percItem}%)</div>
+</div>`;
+});
+}
+
+function atualizarRanking(lista){
+let grupos=agruparSaidas(lista);
+let box=document.getElementById("ranking");
+box.innerHTML="";
+
+if(grupos.length===0){
+box.innerHTML="<p class='sub'>Nenhuma saída neste mês.</p>";
+return;
+}
+
+grupos.forEach((g,i)=>{
+box.innerHTML+=`
+<div class="rankItem">
+<strong>${i+1}º ${g.categoria}</strong><br>
+Total gasto: ${dinheiro(g.valor)}
+</div>`;
+});
+}
+
+function atualizarLista(lista){
+let box=document.getElementById("lista");
+box.innerHTML="";
+
+if(lista.length===0){
+box.innerHTML="<p class='sub'>Nenhum registro neste mês.</p>";
+return;
+}
+
+lista.slice().reverse().forEach(m=>{
+box.innerHTML+=`
+<div class="item">
+<strong>${m.tipo==="entrada"?"Entrada":"Saída"}:</strong> ${m.categoria}<br>
+<strong>Valor:</strong> <span class="${m.tipo==="entrada"?"ok":"no"}">${m.tipo==="entrada"?"+":"-"} ${dinheiro(m.valor)}</span><br>
+<strong>Data:</strong> ${m.data}<br>
+<strong>Onde:</strong> ${m.local||"-"}<br>
+<strong>Obs:</strong> ${m.obs||"-"}<br>
+<button class="del" onclick="excluir(${m.index})">Excluir</button>
+</div>`;
+});
+}
+
+</script>
+
+</body>
+</html>
